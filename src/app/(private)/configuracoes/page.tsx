@@ -10,6 +10,8 @@ import {
     TextField,
     Typography,
     CircularProgress,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import React, { useState, useEffect, useRef } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -18,6 +20,10 @@ import { updateProfile, updateEmail } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const TelaConfiguracoes = () => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+    
     const [userData, setUserData] = useState({
         name: "",
         email: "",
@@ -129,43 +135,62 @@ const TelaConfiguracoes = () => {
     }
 
     return (
-        <Box sx={{ display: "flex", bgcolor: "#edeced",width: "100%", minHeight: "100vh", height: "100vh", overflow: "hidden" }}>
-            <Sidebar activeItem="Configurações" />
-            {/* Top red bar */}
-                    <Box
-                      sx={{
-                        height: "26px",
-                        width: "1440px",
-                        position: "absolute",
-                        overflow: "hidden",
-                        top: 0,
-                        left: 0,
-                        background:
-                          "linear-gradient(90deg, rgba(119,6,6,1) 0%, rgba(165,21,21,1) 100%)",
-                      }}
-                    />
-            {/* Main content */}
-            <Box component="main" sx={{ flexGrow: 1, p: 2, overflow: "hidden", }}>
+        <Box sx={{ 
+            display: "flex", 
+            bgcolor: "#edeced",
+            minHeight: "100vh",
+            position: 'relative'
+        }}>
+           
+            {/* Sidebar - fixa em desktop/tablet */}
+            {!isMobile && (
+                <Box sx={{
+                    position: 'fixed',
+                    left: 0,
+                    top: 0,
+                    height: '100vh',
+                    zIndex: 2,
+                    width: isTablet ? 70 : 350
+                }}>
+                    <Sidebar activeItem="Configurações" />
+                </Box>
+            )}
+
+            {/* Main content - com margem para sidebar */}
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: { xs: 2, sm: 3 },
+                    bgcolor: "#edeced",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: '100vh',
+                    ml: { sm: '70px', md: '350px' }, // Margem igual à largura da sidebar
+                    pt: { xs: '60px', sm: '26px' } // Espaço para a barra vermelha/header mobile
+                }}
+            >
                 {/* User configuration card */}
                 <Paper
                     sx={{
+                        width: "100%",
                         maxWidth: 995,
-                        height: 363,
-                        mt: 7,
-                        mx: "auto",
+                        minHeight: 363,
                         bgcolor: "#d9d9d9",
                         borderRadius: "10px",
-                        p: 4,
+                        p: { xs: 2, md: 4 },
                         display: "flex",
+                        flexDirection: { xs: 'column', md: 'row' }
                     }}
                 >
-                    <Box sx={{ flex: 1 }}>
+                    <Box sx={{ flex: 1, mr: { md: 4 }, mb: { xs: 4, md: 0 } }}>
                         {/* Username field */}
                         <Box sx={{ mb: 4 }}>
                             <Typography
                                 sx={{
                                     fontFamily: "Poppins-Regular, Helvetica",
-                                    fontSize: "21px",
+                                    fontSize: { xs: '1rem', sm: '1.3rem', md: '1.5rem' },
                                     color: "#420000",
                                     mb: 1,
                                 }}
@@ -183,6 +208,7 @@ const TelaConfiguracoes = () => {
                                         <IconButton 
                                             onClick={() => editingField === "name" ? handleSave() : handleEditClick("name")}
                                             disabled={loading}
+                                            size={isMobile ? "small" : "medium"}
                                         >
                                             <Edit sx={{ color: "#420000" }} />
                                         </IconButton>
@@ -194,7 +220,7 @@ const TelaConfiguracoes = () => {
                                         "& .MuiOutlinedInput-notchedOutline": {
                                             border: "none",
                                         },
-                                        fontSize: "1.5rem",
+                                        fontSize: { xs: '1rem', md: '1.5rem' },
                                         color: "#420000",
                                         fontFamily: "Poppins-Regular, Helvetica",
                                     },
@@ -207,7 +233,7 @@ const TelaConfiguracoes = () => {
                             <Typography
                                 sx={{
                                     fontFamily: "Poppins-Regular, Helvetica",
-                                    fontSize: "21px",
+                                    fontSize: { xs: '1rem', sm: '1.3rem', md: '1.5rem' },
                                     color: "#420000",
                                     mb: 1,
                                 }}
@@ -225,6 +251,7 @@ const TelaConfiguracoes = () => {
                                         <IconButton 
                                             onClick={() => editingField === "email" ? handleSave() : handleEditClick("email")}
                                             disabled={loading}
+                                            size={isMobile ? "small" : "medium"}
                                         >
                                             <Edit sx={{ color: "#420000" }} />
                                         </IconButton>
@@ -236,7 +263,7 @@ const TelaConfiguracoes = () => {
                                         "& .MuiOutlinedInput-notchedOutline": {
                                             border: "none",
                                         },
-                                        fontSize: "1.5rem",
+                                        fontSize: { xs: '1rem', md: '1.5rem' },
                                         color: "#420000",
                                         fontFamily: "Poppins-Regular, Helvetica",
                                     },
@@ -253,7 +280,7 @@ const TelaConfiguracoes = () => {
                                     fontFamily: "Inter-Medium, Helvetica",
                                     fontWeight: 500,
                                     color: "#770606",
-                                    fontSize: "1.5rem",
+                                    fontSize: { xs: '1rem', md: '1.5rem' },
                                     textAlign: "center",
                                 }}
                             >
@@ -265,13 +292,14 @@ const TelaConfiguracoes = () => {
                     {/* Profile image */}
                     <Box
                         sx={{
-                            width: 284,
-                            height: 287,
+                            width: { xs: '100%', md: 284 },
+                            height: { xs: 200, md: 287 },
                             position: "relative",
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
                             cursor: "pointer",
+                            mb: { xs: 2, md: 0 }
                         }}
                         onClick={triggerFileInput}
                     >
@@ -290,6 +318,7 @@ const TelaConfiguracoes = () => {
                                 bgcolor: "#f3f3f3",
                                 opacity: 0.4,
                                 position: "absolute",
+                                maxWidth: { xs: 200, md: '100%' }
                             }}
                         />
                         {photoLoading ? (
@@ -298,8 +327,8 @@ const TelaConfiguracoes = () => {
                             <Avatar
                                 src={userData.photoURL || "/default-avatar.png"}
                                 sx={{
-                                    width: 200,
-                                    height: 200,
+                                    width: { xs: 150, md: 200 },
+                                    height: { xs: 150, md: 200 },
                                     position: "relative",
                                     zIndex: 1,
                                 }}
@@ -308,8 +337,8 @@ const TelaConfiguracoes = () => {
                         <Box
                             sx={{
                                 position: "absolute",
-                                width: 72,
-                                height: 72,
+                                width: { xs: 50, md: 72 },
+                                height: { xs: 50, md: 72 },
                                 top: "50%",
                                 left: "50%",
                                 transform: "translate(-50%, -50%)",
@@ -319,11 +348,30 @@ const TelaConfiguracoes = () => {
                                 alignItems: "center",
                             }}
                         >
-                            <Edit sx={{ fontSize: 40, color: "#420000" }} />
+                            <Edit sx={{ fontSize: { xs: 30, md: 40 }, color: "#420000" }} />
                         </Box>
                     </Box>
                 </Paper>
             </Box>
+
+            {/* Mobile header */}
+            {isMobile && (
+                <Box sx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    bgcolor: '#a41414',
+                    color: 'white',
+                    p: 1,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    zIndex: 10
+                }}>
+                    <Typography variant="h6">Configurações</Typography>
+                </Box>
+            )}
         </Box>
     );
 };

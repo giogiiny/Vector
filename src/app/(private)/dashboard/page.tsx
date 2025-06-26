@@ -7,7 +7,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, IconButton, Paper, Stack, styled, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { Sidebar } from "../../../components/Sidebar";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 // Dynamically import Leaflet components
 const MapContainer = dynamic(
@@ -30,8 +30,8 @@ const Popup = dynamic(
     { ssr: false }
 );
 
-// Styled map wrapper with responsive adjustments
-const MapWrapper = styled("div")(({ theme }) => ({
+// Styled map wrapper
+const MapWrapper = styled("div")({
     width: "100%",
     height: "100%",
     position: "relative",
@@ -39,10 +39,7 @@ const MapWrapper = styled("div")(({ theme }) => ({
         height: "100%",
         width: "100%",
     },
-    [theme.breakpoints.down('sm')]: {
-        height: "calc(100% - 56px)", // Account for mobile header
-    },
-}));
+});
 
 function UpdateMapZoom({ zoom }: { zoom: number }) {
     const map = useMap();
@@ -55,9 +52,7 @@ function UpdateMapZoom({ zoom }: { zoom: number }) {
 const MapPage = () => {
     const [zoomLevel, setZoomLevel] = useState(12);
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-    const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const fixedLocations = [
         { position: [-3.1072, -60.0261] as LatLngExpression, name: "Centro" },
@@ -77,64 +72,51 @@ const MapPage = () => {
     const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 1, 18));
     const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 1, 1));
 
-    // Toggle sidebar on mobile
-    useEffect(() => {
-        setSidebarOpen(!isMobile);
-    }, [isMobile]);
-
     return (
         <Box sx={{
             display: "flex",
-            flexDirection: isMobile ? 'column' : 'row',
             bgcolor: "#edeced",
-            width: "100%",
-            minHeight: "100vh",
-            height: isMobile ? "auto" : "100vh",
+            width: "100vw",
+            height: "100vh",
             overflow: "hidden",
+            position: 'relative',
         }}>
-            {sidebarOpen && (
-                <Box sx={{
-                    position: isMobile ? 'static' : 'relative',
-                    width: isMobile ? '100%' : 'auto',
-                    zIndex: 100
-                }}>
-                    <Sidebar activeItem="Mapa" onClose={() => isMobile && setSidebarOpen(false)} />
-                </Box>
-            )}
-
+            {/* Sidebar - posicionada corretamente */}
             <Box sx={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                height: isMobile ? "80vh" : "100%",
+                position: isMobile ? 'fixed' : 'relative',
+                zIndex: isMobile ? 1400 : 100, // Aumentado para 1400 no mobile
+                height: isMobile ? 0 : '100vh',
             }}>
-                {isMobile && (
-                    <Box sx={{
-                        bgcolor: "#a41414",
-                        color: "white",
-                        p: 1,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center"
-                    }}>
-                        <IconButton onClick={() => setSidebarOpen(true)} sx={{ color: "white" }}>
-                            <SearchIcon />
-                        </IconButton>
-                        <Typography variant="h6">Mapa</Typography>
-                        <Box sx={{ width: 40 }} /> {/* Spacer for balance */}
-                    </Box>
-                )}
+                <Sidebar activeItem="Mapa" />
+            </Box>
 
-                <MapWrapper>
+            {/* Main content area */}
+            <Box sx={{
+                flexGrow: 1,
+                position: 'relative',
+                height: '100vh',
+                width: '100%',
+                overflow: 'hidden',
+                pt: isMobile ? '60px' : 0, // Espaço para o header mobile
+            }}>
+                <MapWrapper sx={{
+                    height: '100%',
+                    zIndex: 100,
+                }}>
                     <MapContainer
                         center={[-3.1190, -60.0217] as LatLngExpression}
                         zoom={zoomLevel}
                         zoomControl={false}
+                        style={{
+                            height: '100%',
+                            width: '100%',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                        }}
                     >
                         <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
 
                         {fixedLocations.map((location, index) => {
@@ -154,13 +136,13 @@ const MapPage = () => {
                                     radius={800 + Math.random() * 400}
                                 >
                                     <Popup>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontSize: isMobile ? '0.8rem' : '1rem' }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                                             Câmara {index + 1} - {location.name}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
+                                        <Typography variant="body2">
                                             Última atualização: {lastUpdate.toLocaleDateString()} {lastUpdate.toLocaleTimeString()}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
+                                        <Typography variant="body2">
                                             Risco epidemiológico: {epidemiologicalPercentage}%
                                         </Typography>
                                     </Popup>
@@ -171,15 +153,15 @@ const MapPage = () => {
                         <UpdateMapZoom zoom={zoomLevel} />
                     </MapContainer>
 
-                    {/* Responsive Zoom Controls */}
+                    {/* Zoom Controls */}
                     <Paper
                         elevation={3}
                         sx={{
                             position: "absolute",
-                            top: isMobile ? 10 : 38,
-                            right: isMobile ? 10 : 20,
-                            width: isMobile ? 40 : 50,
-                            height: isMobile ? 90 : 122,
+                            top: isMobile ? 98 : 38, // Ajuste para mobile
+                            right: 20,
+                            width: 50,
+                            height: 122,
                             bgcolor: "#a41414",
                             borderRadius: "45px",
                             display: "flex",
@@ -188,29 +170,13 @@ const MapPage = () => {
                             zIndex: 1000,
                         }}
                     >
-                        <Stack spacing={isMobile ? 0.5 : 1} alignItems="center">
-                            <IconButton 
-                                sx={{ 
-                                    color: "white",
-                                    padding: isMobile ? '6px' : '8px'
-                                }} 
-                                onClick={handleZoomIn}
-                            >
-                                <SearchIcon fontSize={isMobile ? "medium" : "large"} />
+                        <Stack spacing={1} alignItems="center">
+                            <IconButton sx={{ color: "white" }} onClick={handleZoomIn}>
+                                <SearchIcon fontSize="large" />
                             </IconButton>
-                            <Box sx={{ 
-                                width: "60%", 
-                                height: 1, 
-                                bgcolor: "rgba(255,255,255,0.3)" 
-                            }} />
-                            <IconButton 
-                                sx={{ 
-                                    color: "white",
-                                    padding: isMobile ? '6px' : '8px'
-                                }} 
-                                onClick={handleZoomOut}
-                            >
-                                <ZoomOutIcon fontSize={isMobile ? "medium" : "large"} />
+                            <Box sx={{ width: "60%", height: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+                            <IconButton sx={{ color: "white" }} onClick={handleZoomOut}>
+                                <ZoomOutIcon fontSize="large" />
                             </IconButton>
                         </Stack>                                                 
                     </Paper>                                          

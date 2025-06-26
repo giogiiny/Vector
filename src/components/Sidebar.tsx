@@ -14,6 +14,8 @@ import MapIcon from "@mui/icons-material/Map";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import SettingsIcon from "@mui/icons-material/Settings";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import {
   Avatar,
   Box,
@@ -26,6 +28,9 @@ import {
   Typography,
   Menu,
   MenuItem,
+  Drawer,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 interface SidebarProps {
@@ -42,6 +47,9 @@ export const Sidebar = ({ activeItem = "Mapa" }: SidebarProps) => {
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const open = Boolean(anchorEl);
 
   useEffect(() => {
@@ -91,6 +99,14 @@ export const Sidebar = ({ activeItem = "Mapa" }: SidebarProps) => {
     router.push("/configuracoes");
   };
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const handleDrawerClose = () => {
+    setMobileOpen(false);
+  };
+
   const menuItems = [
     { text: "Mapa", icon: <MapIcon />, path: "/dashboard" },
     { text: "Câmara", icon: <VideocamIcon />, path: "/camara" },
@@ -101,38 +117,18 @@ export const Sidebar = ({ activeItem = "Mapa" }: SidebarProps) => {
   // Extrai o primeiro nome
   const firstName = userData?.name?.split(" ")[0] || "Usuário";
 
-  return (
-    <Paper
-      elevation={8}
-      sx={{
-        minWidth: 300,
-        width: 350,
-        height: "100%",
-        bgcolor: "#edeced",
-        borderRadius: 0,
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 10,
-        flexShrink: 0,
-      }}
-    >
-      {/* Red top bar */}
-      <Box
-        sx={{
-          width: "100%",
-          height: 26,
-          background:
-            "linear-gradient(90deg, rgba(119,6,6,1) 0%, rgba(165,21,21,1) 100%)",
-        }}
-      />
+  // Conteúdo da sidebar
+  const drawerContent = (
+    <>
+
 
       {/* Logo e Texto VECTOR */}
       <Box sx={{
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        mt: 4,
-        mb: 4,
+        mt: isMobile ? 2 : 4,
+        mb: isMobile ? 2 : 4,
         position: 'relative',
         pl: 2
       }}>
@@ -181,7 +177,10 @@ export const Sidebar = ({ activeItem = "Mapa" }: SidebarProps) => {
         {menuItems.map((item) => (
           <ListItemButton
             key={item.text}
-            onClick={() => router.push(item.path)}
+            onClick={() => {
+              router.push(item.path);
+              if (isMobile) handleDrawerClose();
+            }}
             selected={activeItem === item.text}
             sx={{
               height: 60,
@@ -220,7 +219,7 @@ export const Sidebar = ({ activeItem = "Mapa" }: SidebarProps) => {
         ))}
       </List>
 
-      {/* User Profile com Menu - Área atualizada */}
+      {/* User Profile com Menu */}
       <Box sx={{ p: 3, display: "flex", alignItems: "center", position: "relative" }}>
         <Avatar
           src={userData?.photoURL || undefined}
@@ -281,6 +280,100 @@ export const Sidebar = ({ activeItem = "Mapa" }: SidebarProps) => {
           </MenuItem>
         </Menu>
       </Box>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile Header */}
+        <Paper
+          elevation={4}
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+            bgcolor: "#edeced",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            zIndex: 1200
+          }}
+        >
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ color: "#7d0404" }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexGrow: 1,
+            height: '100%'
+          }}>
+            <Typography variant="h6" sx={{ color: "#7d0404", fontWeight: 600 }}>
+              {activeItem}
+            </Typography>
+          </Box>
+
+          {/* Espaço para alinhamento */}
+          <Box sx={{ width: 48 }}></Box>
+        </Paper>
+
+        {/* Mobile Drawer */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerClose}
+          ModalProps={{
+            keepMounted: true,
+          }}
+          sx={{
+            '& .MuiDrawer-paper': {
+              width: 350,
+              boxSizing: 'border-box',
+              bgcolor: "#edeced",
+              zIndex: 1300, // Adicionado para garantir que fique acima do header
+            },
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+            <IconButton onClick={handleDrawerClose}>
+              <CloseIcon sx={{ color: "#7d0404" }} />
+            </IconButton>
+          </Box>
+          {drawerContent}
+        </Drawer>
+      </>
+    );
+  }
+
+  // Desktop version
+  return (
+    <Paper
+      elevation={8}
+      sx={{
+        minWidth: 300,
+        width: 350,
+        height: "100%",
+        bgcolor: "#edeced",
+        borderRadius: 0,
+        display: "flex",
+        flexDirection: "column",
+        zIndex: 10,
+        flexShrink: 0,
+      }}
+    >
+      {drawerContent}
     </Paper>
   );
 };

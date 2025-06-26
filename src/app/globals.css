@@ -1,1 +1,89 @@
 @import "tailwindcss";
+
+/* Impressão/PDF */
+.no-print {
+  display: block;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .print-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  
+  /* Garante que os gráficos tenham fundo branco */
+  canvas {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+  
+  /* Melhora a legibilidade do texto */
+  * {
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Remove sombras e bordas desnecessárias */
+  .shadow-md {
+    box-shadow: none !important;
+  }
+}
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    accent-color: exact !important;
+  }
+  
+  /* Fallback para elementos do Material UI */
+  .MuiButton-root, .MuiIconButton-root, .MuiPaper-root {
+    color: #333 !important;
+    background-color: white !important;
+  }
+  
+  /* Garante visibilidade dos gráficos */
+  canvas {
+    background-color: white !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Print preview styles for .print-preview class */
+.print-preview * {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  accent-color: exact !important;
+}
+
+.print-preview .MuiButton-root,
+.print-preview .MuiIconButton-root,
+.print-preview .MuiPaper-root {
+  color: #333 !important;
+  background-color: white !important;
+}
+
+.print-preview canvas {
+  background-color: white !important;
+  max-width: 100% !important;
+}
+.risk-bar-container {
+  background-color: #f3f3f3 !important;
+}
+
+.risk-bar-container > div {
+  accent-color: exact !important;
+  print-color-adjust: exact !important;
+}

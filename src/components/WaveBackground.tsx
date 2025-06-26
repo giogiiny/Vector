@@ -1,3 +1,4 @@
+// components/WaveBackground.tsx
 import React from 'react';
 
 interface WaveBackgroundProps {
@@ -85,7 +86,7 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({
         d="M374 231C211.887 258.406 1 576 1 576V1157.5C24.8763 1146.01 112.441 1125.89 204.5 1135C282.846 1137.95 465.097 1204.04 672 1231.5C878.903 1258.96 1225.2 1055.93 1382.5 1049C1539.8 1042.07 1629.22 1098.97 1631 1115V1C1622.26 19.4628 1119.36 281.614 943 298C766.64 314.386 536.113 203.594 374 231Z"
         fill="url(#paint0_linear)"
         stroke="url(#paint1_linear)"
-        strokeWidth={`${60 * scaleFactor}`}
+        strokeWidth={`${40 * scaleFactor}`}
       />
     </svg>
   );
